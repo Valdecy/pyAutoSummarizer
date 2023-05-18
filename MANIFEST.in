@@ -1,0 +1,1 @@
+recursive-include pySummarizer/base/stws *.txt
