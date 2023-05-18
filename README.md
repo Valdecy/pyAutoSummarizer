@@ -1,18 +1,18 @@
-# pySummarizer
+# pyAutoSummarizer
 
-pySummarizer - A Extrative and Abstractive Summarization Library Powered with Artificial Intelligence. 
+pyAutoSummarizer - A Extrative and Abstractive Summarization Library Powered with Artificial Intelligence. 
 
 ## Introduction
 
-pySummarizer is a sophisticated Python library developed to handle the complex task of text summarization, an essential component of NLP (Natural Language Processing). The library implements several advanced summarization algorithms, both extractive and abstractive. Extractive summarization algorithms focus on identifying and extracting key sentences or phrases from the original text to form the summary. Among the techniques utilized by pySummarizer are **TextRank**, **LexRank**, **LSA** (Latent Semantic Analysis), and **KL-Sum**. In the domain of deep learning, pySummarizer incorporates the use of **T5** (Text-to-Text Transfer Transformer) model, which is known for its versatility in handling a range of language tasks including summarization. Furthermore, pySummarizer also utilizes OpenAI's GPT (Generative Pretrained Transformer), specifically the **chatGPT** model for abstractive summarization. Unlike extractive techniques, abstractive summarization involves generating new sentences, offering a summary that maintains the essence of the original text but may not use the exact wording.
+pyAutoSummarizer is a sophisticated Python library developed to handle the complex task of text summarization, an essential component of NLP (Natural Language Processing). The library implements several advanced summarization algorithms, both extractive and abstractive. Extractive summarization algorithms focus on identifying and extracting key sentences or phrases from the original text to form the summary. Among the techniques utilized by pyAutoSummarizer are **TextRank**, **LexRank**, **LSA** (Latent Semantic Analysis), and **KL-Sum**. In the domain of deep learning, pyAutoSummarizer incorporates the use of **T5** (Text-to-Text Transfer Transformer) model, which is known for its versatility in handling a range of language tasks including summarization. Furthermore, pyAutoSummarizer also utilizes OpenAI's GPT (Generative Pretrained Transformer), specifically the **chatGPT** model for abstractive summarization. Unlike extractive techniques, abstractive summarization involves generating new sentences, offering a summary that maintains the essence of the original text but may not use the exact wording.
 
-To evaluate the quality of the summaries generated, pySummarizer integrates various metrics such as **Rouge-N**, **Rouge-L**, and **Rouge-S**, which compare the overlap of n-grams, longest common subsequence, and skip-bigram between the generated summary and the reference summary respectively. Additionally, it employs **BLEU** (Bilingual Evaluation Understudy), and **METEOR** (Metric for Evaluation of Translation with Explicit ORdering).
+To evaluate the quality of the summaries generated, pyAutoSummarizer integrates various metrics such as **Rouge-N**, **Rouge-L**, and **Rouge-S**, which compare the overlap of n-grams, longest common subsequence, and skip-bigram between the generated summary and the reference summary respectively. Additionally, it employs **BLEU** (Bilingual Evaluation Understudy), and **METEOR** (Metric for Evaluation of Translation with Explicit ORdering).
 
 ## Usage
 
 1. Install
 ```bash
-pip install pySummarizer
+pip install pyAutoSummarizer
 ```
 
 2. Try it in **Colab**:
