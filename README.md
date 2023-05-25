@@ -1,6 +1,6 @@
 # pyAutoSummarizer
 
-pyAutoSummarizer - A Extrative and Abstractive Summarization Library Powered with Artificial Intelligence. 
+pyAutoSummarizer - A Extractive and Abstractive Summarization Library Powered with Artificial Intelligence. 
 
 ## Introduction
 
