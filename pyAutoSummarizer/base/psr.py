@@ -3,10 +3,10 @@
 # Created by: Prof. Valdecy Pereira, D.Sc.
 # UFF - Universidade Federal Fluminense (Brazil)
 # email:  valdecy.pereira@gmail.com
-# pyAutoSummarizer - A Extrative and Abstractive Summarization Library Powered with Artificial Intelligence
+#pyAutoSummarizer - An Extractive and Abstractive Summarization Library Powered with Artificial Intelligence
 
 # Citation: 
-# PEREIRA, V. (2023). Project: pyAutoSummarizer, File: pySummarizer.py, GitHub repository: <https://github.com/Valdecy/pyAutoSummarizer>
+# PEREIRA, V. (2023). Project: pyAutoSummarizer, GitHub repository: <https://github.com/Valdecy/pyAutoSummarizer>
 
 ############################################################################
 
