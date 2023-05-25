@@ -6,7 +6,7 @@ long_description = (this_directory / 'README.md').read_text()
 
 setup(
     name='pySummarizer',
-    version='1.0.1',
+    version='1.0.2',
     license='GNU',
     author='Valdecy Pereira',
     author_email='valdecy.pereira@gmail.com',
@@ -22,7 +22,7 @@ setup(
         'transformers'
     ],
     zip_safe=True,
-    description='A Extrative and Abstractive Summarization Library Powered with Artificial Intelligence',
+    description='An Extractive and Abstractive Summarization Library Powered with Artificial Intelligence',
     long_description=long_description,
     long_description_content_type='text/markdown',
 )
