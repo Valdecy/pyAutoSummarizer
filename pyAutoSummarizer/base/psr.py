@@ -29,6 +29,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from transformers import T5ForConditionalGeneration, T5Tokenizer
+from transformers import PegasusForConditionalGeneration, PegasusTokenizer
 
 ############################################################################
 
@@ -135,44 +136,60 @@ class summarization():
         # Remove Stopwords
         if (len(stop_words) > 0):
             for sw_ in stop_words: 
-                if   (sw_ == 'ar' or sw_ == 'ara'):
+                if   (sw_ == 'ar' or sw_ == 'ara' or 'arabic'):
                     f_file = pkg_resources.open_text(stws, 'Stopwords-Arabic.txt', encoding = 'utf8')
-                elif (sw_ == 'bn' or sw_ == 'ben'):
+                elif (sw_ == 'bn' or sw_ == 'ben' or 'bengali'):
                     f_file = pkg_resources.open_text(stws, 'Stopwords-Bengali.txt', encoding = 'utf8')
-                elif (sw_ == 'bg' or sw_ == 'bul'):
+                elif (sw_ == 'bg' or sw_ == 'bul' or 'bulgarian'):
                     f_file = pkg_resources.open_text(stws, 'Stopwords-Bulgarian.txt', encoding = 'utf8')
-                elif (sw_ == 'cs' or sw_ == 'cze' or sw_ == 'ces'):
+                elif (sw_ == 'zh' or sw_ == 'chi' or 'chinese'):
+                    f_file = pkg_resources.open_text(stws, 'Stopwords-Chinese.txt', encoding = 'utf8')
+                elif (sw_ == 'cs' or sw_ == 'cze' or sw_ == 'ces' or 'czech'):
                     f_file = pkg_resources.open_text(stws, 'Stopwords-Czech.txt', encoding = 'utf8')
-                elif (sw_ == 'en' or sw_ == 'eng'):
+                elif (sw_ == 'en' or sw_ == 'eng' or 'english'):
                     f_file = pkg_resources.open_text(stws, 'Stopwords-English.txt', encoding = 'utf8')
-                elif (sw_ == 'fi' or sw_ == 'fin'):
+                elif (sw_ == 'fi' or sw_ == 'fin' or 'finnish'):
                     f_file = pkg_resources.open_text(stws, 'Stopwords-Finnish.txt', encoding = 'utf8')
-                elif (sw_ == 'fr' or sw_ == 'fre' or sw_ == 'fra'):
+                elif (sw_ == 'fr' or sw_ == 'fre' or sw_ == 'fra' or 'french'):
                     f_file = pkg_resources.open_text(stws, 'Stopwords-French.txt', encoding = 'utf8')
-                elif (sw_ == 'de' or sw_ == 'ger' or sw_ == 'deu'):
+                elif (sw_ == 'de' or sw_ == 'ger' or sw_ == 'deu' or 'german'):
                     f_file = pkg_resources.open_text(stws, 'Stopwords-German.txt', encoding = 'utf8')
-                elif (sw_ == 'hi' or sw_ == 'hin'):
+                elif (sw_ == 'el' or sw_ == 'gre' or 'greek'):
+                    f_file = pkg_resources.open_text(stws, 'Stopwords-Greek.txt', encoding = 'utf8')
+                elif (sw_ == 'he' or sw_ == 'heb' or 'hebrew'):
+                    f_file = pkg_resources.open_text(stws, 'Stopwords-Hebrew.txt', encoding = 'utf8')
+                elif (sw_ == 'hi' or sw_ == 'hin' or 'hind'):
                     f_file = pkg_resources.open_text(stws, 'Stopwords-Hind.txt', encoding = 'utf8')
-                elif (sw_ == 'hu' or sw_ == 'hun'):
+                elif (sw_ == 'hu' or sw_ == 'hun' or 'hungarian'):
                     f_file = pkg_resources.open_text(stws, 'Stopwords-Hungarian.txt', encoding = 'utf8')
-                elif (sw_ == 'it' or sw_ == 'ita'):
+                elif (sw_ == 'it' or sw_ == 'ita' or 'italian'):
                     f_file = pkg_resources.open_text(stws, 'Stopwords-Italian.txt', encoding = 'utf8')
-                elif (sw_ == 'mr' or sw_ == 'mar'):
+                elif (sw_ == 'ja' or sw_ == 'jpn' or 'japanese'):
+                    f_file = pkg_resources.open_text(stws, 'Stopwords-Japanese.txt', encoding = 'utf8')
+                elif (sw_ == 'ko' or sw_ == 'kor' or 'korean'):
+                    f_file = pkg_resources.open_text(stws, 'Stopwords-Korean.txt', encoding = 'utf8')
+                elif (sw_ == 'mr' or sw_ == 'mar' or 'marathi'):
                     f_file = pkg_resources.open_text(stws, 'Stopwords-Marathi.txt', encoding = 'utf8')
-                elif (sw_ == 'fa' or sw_ == 'per' or sw_ == 'fas'):
+                elif (sw_ == 'fa' or sw_ == 'per' or sw_ == 'fas' or 'persian'):
                     f_file = pkg_resources.open_text(stws, 'Stopwords-Persian.txt', encoding = 'utf8')
-                elif (sw_ == 'pl' or sw_ == 'pol'):
+                elif (sw_ == 'pl' or sw_ == 'pol' or 'polish'):
                     f_file = pkg_resources.open_text(stws, 'Stopwords-Polish.txt', encoding = 'utf8')
-                elif (sw_ == 'pt-br' or sw_ == 'por-br'):
+                elif (sw_ == 'pt-br' or sw_ == 'por-br' or 'portuguese-br'):
                     f_file = pkg_resources.open_text(stws, 'Stopwords-Portuguese-br.txt', encoding = 'utf8')
-                elif (sw_ == 'ro' or sw_ == 'rum' or sw_ == 'ron'):
+                elif (sw_ == 'ro' or sw_ == 'rum' or sw_ == 'ron' or 'romanian'):
                     f_file = pkg_resources.open_text(stws, 'Stopwords-Romanian.txt', encoding = 'utf8')
-                elif (sw_ == 'ru' or sw_ == 'rus'):
+                elif (sw_ == 'ru' or sw_ == 'rus' or 'russian'):
                     f_file = pkg_resources.open_text(stws, 'Stopwords-Russian.txt', encoding = 'utf8')
-                elif (sw_ == 'es' or sw_ == 'spa'):
+                elif (sw_ == 'sk' or sw_ == 'slo' or 'slovak'):
+                    f_file = pkg_resources.open_text(stws, 'Stopwords-Slovak.txt', encoding = 'utf8')
+                elif (sw_ == 'es' or sw_ == 'spa' or 'spanish'):
                     f_file = pkg_resources.open_text(stws, 'Stopwords-Spanish.txt', encoding = 'utf8')
-                elif (sw_ == 'sv' or sw_ == 'swe'):
+                elif (sw_ == 'sv' or sw_ == 'swe' or 'swedish'):
                     f_file = pkg_resources.open_text(stws, 'Stopwords-Swedish.txt', encoding = 'utf8')
+                elif (sw_ == 'th' or sw_ == 'tha' or 'thai'):
+                    f_file = pkg_resources.open_text(stws, 'Stopwords-Thai.txt', encoding = 'utf8')
+                elif (sw_ == 'uk' or sw_ == 'ukr' or 'ukrainian'):
+                    f_file = pkg_resources.open_text(stws, 'Stopwords-Ukrainian.txt', encoding = 'utf8')
                 f_lines = f_file.read()
                 sw      = f_lines.split('\n')
                 sw      = list(filter(None, sw))
@@ -560,7 +577,7 @@ class summarization():
 
     ##############################################################################
     
-    # Function: ChatGPT
+    # Function: chatGPT
     def summ_abst_chatgpt(self, api_key = 'your_api_key_here', query = 'make an abstratctive summarization', model = 'text-davinci-003', max_tokens = 250, n = 1, temperature = 0.8):
         def query_chatgpt(prompt, model = model, max_tokens = max_tokens, n = n, temperature = temperature):
             response = openai.Completion.create(
@@ -578,5 +595,16 @@ class summarization():
         self.summ      = summary 
         print(summary)
         return summary 
+    
+    # Function: PEGASUS
+    def summ_abst_pegasus(self, text, model_name = 'google/pegasus-xsum', min_L = 100, max_L = 150):
+        tokenizer = PegasusTokenizer.from_pretrained(model_name)
+        pegasus   = PegasusForConditionalGeneration.from_pretrained(model_name)
+        tokens    = tokenizer.encode('summarize: ' + text, return_tensors = 'pt', max_length = 1024, truncation = True)
+        summary   = pegasus.generate(tokens, min_length = min_L, max_length = max_L, length_penalty = 2.0, num_beams = 4, early_stopping = True)
+        summary   = tokenizer.decode(summary[0], skip_special_tokens = True)
+        self.summ = summary 
+        print(summary)
+        return summary
 
     ##############################################################################   
