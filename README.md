@@ -28,7 +28,7 @@ Extractive Summarization
 
 Abstractive Summarization. 
 - Example 01: chatGPT (Deep Learning) ([ Colab Demo ](https://colab.research.google.com/drive/1ipl6ZnyumJeuxsYelcmZEdsXDMIuM5WG?usp=sharing#scrollTo=npuyBY596tJ5)) Requires the user to have an **API key** (https://platform.openai.com/account/api-keys)
-- Example 02: Pegasus (Deep Learning) ([ Colab Demo ](https://colab.research.google.com/drive/1RWIEm9WoZBPYA_p4A1LqKnFPaXhNsQcM?usp=sharing))
+- Example 02: PEGASUS (Deep Learning) ([ Colab Demo ](https://colab.research.google.com/drive/1RWIEm9WoZBPYA_p4A1LqKnFPaXhNsQcM?usp=sharing))
 
 ## Others
 
