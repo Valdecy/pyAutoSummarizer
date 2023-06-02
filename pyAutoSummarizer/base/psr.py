@@ -52,7 +52,7 @@ class summarization():
         else:
             self.sentences = self.split_sentences(words_per_sentence = self.limit_w, chars_per_sentence = self.limit_c)
             self.original  = self.split_sentences(words_per_sentence = self.limit_w, chars_per_sentence = self.limit_c)
-        self.corpus = self.clear_text(self.sentences, stop_words = self.p_sw, lowercase = self.p_lc, rmv_accents = self.p_ra, rmv_special_chars = self.p_rc, rmv_numbers = self.p_rn, rmv_custom_words = self.p_rw)
+        self.corpus    = self.clear_text(self.sentences, stop_words = self.p_sw, lowercase = self.p_lc, rmv_accents = self.p_ra, rmv_special_chars = self.p_rc, rmv_numbers = self.p_rn, rmv_custom_words = self.p_rw)
         self.txt       = '. '.join(self.corpus)
         self.sentences = regex.split(pattern, self.txt)
         for i in range(len(self.sentences)-1, -1, -1):
