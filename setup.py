@@ -5,8 +5,8 @@ this_directory = Path(__file__).parent
 long_description = (this_directory / 'README.md').read_text()
 
 setup(
-    name='pySummarizer',
-    version='1.0.4',
+    name='pyAutoSummarizer',
+    version='1.0.8',
     license='GNU',
     author='Valdecy Pereira',
     author_email='valdecy.pereira@gmail.com',
@@ -14,6 +14,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
+        'chardet',
         'numpy',
         'regex',
         'scikit-learn',
