@@ -153,9 +153,9 @@ class summarization():
                     name = 'Stopwords-English.txt'
                 elif (sw_ == 'fi' or sw_ == 'fin' or sw_ == 'finnish'):
                     name = 'Stopwords-Finnish.txt'
-                elif (sw_ == 'fr' or sw_ == 'fre' or sw_ == 'fra' or 'french'):
+                elif (sw_ == 'fr' or sw_ == 'fre' or sw_ == 'fra' or sw_ ==  'french'):
                     name = 'Stopwords-French.txt'
-                elif (sw_ == 'de' or sw_ == 'ger' or sw_ == 'deu' or 'german'):
+                elif (sw_ == 'de' or sw_ == 'ger' or sw_ == 'deu' or sw_ ==  'german'):
                     name = 'Stopwords-German.txt'
                 elif (sw_ == 'el' or sw_ == 'gre' or sw_ == 'greek'):
                     name = 'Stopwords-Greek.txt'
