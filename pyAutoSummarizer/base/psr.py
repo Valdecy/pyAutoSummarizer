@@ -11,6 +11,7 @@
 ############################################################################
 
 # Required Libraries
+import chardet
 import numpy as np
 import openai 
 import re 
@@ -45,6 +46,7 @@ class summarization():
         self.limit_w  = n_words
         self.limit_c  = n_chars
         self.full_txt = text
+        self.sw_full  = []
         pattern       = r'(?<!\b(?:Mr|Mrs|Ms|Dr|Prof|St|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|[A-Z]|[A-Z][a-z]|[a-z]))[.!?]\s+' # r'(?<=[.!?])\s+'
         if (self.limit_w <= 0 and self.limit_c <= 0):
             self.sentences = regex.split(pattern, text.strip()) 
@@ -55,17 +57,18 @@ class summarization():
         self.corpus    = self.clear_text(self.sentences, stop_words = self.p_sw, lowercase = self.p_lc, rmv_accents = self.p_ra, rmv_special_chars = self.p_rc, rmv_numbers = self.p_rn, rmv_custom_words = self.p_rw)
         self.txt       = '. '.join(self.corpus)
         self.sentences = regex.split(pattern, self.txt)
-        for i in range(len(self.sentences)-1, -1, -1):
-            self.sentences[i] = self.sentences[i].replace('.', '')
-            if (self.sentences[i] == ''):
+        for i in range(len(self.corpus)-1, -1, -1):
+            self.corpus[i] = self.corpus[i].replace('.', '')
+            if (self.corpus[i] == ''):
+                del self.corpus[i]
                 del self.sentences[i]
                 del self.original[i]
         self.tokens        = []
         self.w_freq        = {}
         self.w_dist        = {}
         self.loaded_models = {}
-        for i in range(0, len(self.sentences)):
-            self.tokens.append(re.findall(r'\b\w+\b', self.sentences[i].lower()))
+        for i in range(0, len(self.corpus)):
+            self.tokens.append(re.findall(r'\b\w+\b', self.corpus[i].lower()))
         self.vocabulary = set([token for s in self.tokens for token in s])
         self.all_tokens = [item for sublist in self.tokens for item in sublist]
         for token in self.vocabulary:
@@ -118,7 +121,7 @@ class summarization():
     
     # Function: Text Pre-Processing
     def clear_text(self, corpus, stop_words = ['en'], lowercase = True, rmv_accents = True, rmv_special_chars = True, rmv_numbers = True, rmv_custom_words = [], verbose = False):
-        sw_full = []
+        self.sw_full = []
         # Lower Case
         if (lowercase == True):
             if (verbose == True):
@@ -136,69 +139,74 @@ class summarization():
         # Remove Stopwords
         if (len(stop_words) > 0):
             for sw_ in stop_words: 
-                if   (sw_ == 'ar' or sw_ == 'ara' or 'arabic'):
-                    f_file = pkg_resources.open_text(stws, 'Stopwords-Arabic.txt', encoding = 'utf8')
-                elif (sw_ == 'bn' or sw_ == 'ben' or 'bengali'):
-                    f_file = pkg_resources.open_text(stws, 'Stopwords-Bengali.txt', encoding = 'utf8')
-                elif (sw_ == 'bg' or sw_ == 'bul' or 'bulgarian'):
-                    f_file = pkg_resources.open_text(stws, 'Stopwords-Bulgarian.txt', encoding = 'utf8')
-                elif (sw_ == 'zh' or sw_ == 'chi' or 'chinese'):
-                    f_file = pkg_resources.open_text(stws, 'Stopwords-Chinese.txt', encoding = 'utf8')
-                elif (sw_ == 'cs' or sw_ == 'cze' or sw_ == 'ces' or 'czech'):
-                    f_file = pkg_resources.open_text(stws, 'Stopwords-Czech.txt', encoding = 'utf8')
-                elif (sw_ == 'en' or sw_ == 'eng' or 'english'):
-                    f_file = pkg_resources.open_text(stws, 'Stopwords-English.txt', encoding = 'utf8')
-                elif (sw_ == 'fi' or sw_ == 'fin' or 'finnish'):
-                    f_file = pkg_resources.open_text(stws, 'Stopwords-Finnish.txt', encoding = 'utf8')
+                if   (sw_ == 'ar' or sw_ == 'ara' or sw_ == 'arabic'):
+                    name = 'Stopwords-Arabic.txt'
+                elif (sw_ == 'bn' or sw_ == 'ben' or sw_ == 'bengali'):
+                    name = 'Stopwords-Bengali.txt'
+                elif (sw_ == 'bg' or sw_ == 'bul' or sw_ == 'bulgarian'):
+                    name = 'Stopwords-Bulgarian.txt'
+                elif (sw_ == 'zh' or sw_ == 'chi' or sw_ == 'chinese'):
+                    name = 'Stopwords-Chinese.txt'
+                elif (sw_ == 'cs' or sw_ == 'cze' or sw_ == 'ces' or sw_ == 'czech'):
+                    name = 'Stopwords-Czech.txt'
+                elif (sw_ == 'en' or sw_ == 'eng' or sw_ == 'english'):
+                    name = 'Stopwords-English.txt'
+                elif (sw_ == 'fi' or sw_ == 'fin' or sw_ == 'finnish'):
+                    name = 'Stopwords-Finnish.txt'
                 elif (sw_ == 'fr' or sw_ == 'fre' or sw_ == 'fra' or 'french'):
-                    f_file = pkg_resources.open_text(stws, 'Stopwords-French.txt', encoding = 'utf8')
+                    name = 'Stopwords-French.txt'
                 elif (sw_ == 'de' or sw_ == 'ger' or sw_ == 'deu' or 'german'):
-                    f_file = pkg_resources.open_text(stws, 'Stopwords-German.txt', encoding = 'utf8')
-                elif (sw_ == 'el' or sw_ == 'gre' or 'greek'):
-                    f_file = pkg_resources.open_text(stws, 'Stopwords-Greek.txt', encoding = 'utf8')
-                elif (sw_ == 'he' or sw_ == 'heb' or 'hebrew'):
-                    f_file = pkg_resources.open_text(stws, 'Stopwords-Hebrew.txt', encoding = 'utf8')
-                elif (sw_ == 'hi' or sw_ == 'hin' or 'hind'):
-                    f_file = pkg_resources.open_text(stws, 'Stopwords-Hind.txt', encoding = 'utf8')
-                elif (sw_ == 'hu' or sw_ == 'hun' or 'hungarian'):
-                    f_file = pkg_resources.open_text(stws, 'Stopwords-Hungarian.txt', encoding = 'utf8')
-                elif (sw_ == 'it' or sw_ == 'ita' or 'italian'):
-                    f_file = pkg_resources.open_text(stws, 'Stopwords-Italian.txt', encoding = 'utf8')
-                elif (sw_ == 'ja' or sw_ == 'jpn' or 'japanese'):
-                    f_file = pkg_resources.open_text(stws, 'Stopwords-Japanese.txt', encoding = 'utf8')
-                elif (sw_ == 'ko' or sw_ == 'kor' or 'korean'):
-                    f_file = pkg_resources.open_text(stws, 'Stopwords-Korean.txt', encoding = 'utf8')
-                elif (sw_ == 'mr' or sw_ == 'mar' or 'marathi'):
-                    f_file = pkg_resources.open_text(stws, 'Stopwords-Marathi.txt', encoding = 'utf8')
-                elif (sw_ == 'fa' or sw_ == 'per' or sw_ == 'fas' or 'persian'):
-                    f_file = pkg_resources.open_text(stws, 'Stopwords-Persian.txt', encoding = 'utf8')
-                elif (sw_ == 'pl' or sw_ == 'pol' or 'polish'):
-                    f_file = pkg_resources.open_text(stws, 'Stopwords-Polish.txt', encoding = 'utf8')
-                elif (sw_ == 'pt-br' or sw_ == 'por-br' or 'portuguese-br'):
-                    f_file = pkg_resources.open_text(stws, 'Stopwords-Portuguese-br.txt', encoding = 'utf8')
-                elif (sw_ == 'ro' or sw_ == 'rum' or sw_ == 'ron' or 'romanian'):
-                    f_file = pkg_resources.open_text(stws, 'Stopwords-Romanian.txt', encoding = 'utf8')
-                elif (sw_ == 'ru' or sw_ == 'rus' or 'russian'):
-                    f_file = pkg_resources.open_text(stws, 'Stopwords-Russian.txt', encoding = 'utf8')
-                elif (sw_ == 'sk' or sw_ == 'slo' or 'slovak'):
-                    f_file = pkg_resources.open_text(stws, 'Stopwords-Slovak.txt', encoding = 'utf8')
-                elif (sw_ == 'es' or sw_ == 'spa' or 'spanish'):
-                    f_file = pkg_resources.open_text(stws, 'Stopwords-Spanish.txt', encoding = 'utf8')
-                elif (sw_ == 'sv' or sw_ == 'swe' or 'swedish'):
-                    f_file = pkg_resources.open_text(stws, 'Stopwords-Swedish.txt', encoding = 'utf8')
-                elif (sw_ == 'th' or sw_ == 'tha' or 'thai'):
-                    f_file = pkg_resources.open_text(stws, 'Stopwords-Thai.txt', encoding = 'utf8')
-                elif (sw_ == 'uk' or sw_ == 'ukr' or 'ukrainian'):
-                    f_file = pkg_resources.open_text(stws, 'Stopwords-Ukrainian.txt', encoding = 'utf8')
-                f_lines = f_file.read()
-                sw      = f_lines.split('\n')
-                sw      = list(filter(None, sw))
-                sw_full.extend(sw)
+                    name = 'Stopwords-German.txt'
+                elif (sw_ == 'el' or sw_ == 'gre' or sw_ == 'greek'):
+                    name = 'Stopwords-Greek.txt'
+                elif (sw_ == 'he' or sw_ == 'heb' or sw_ == 'hebrew'):
+                    name = 'Stopwords-Hebrew.txt'
+                elif (sw_ == 'hi' or sw_ == 'hin' or sw_ == 'hind'):
+                    name = 'Stopwords-Hind.txt'
+                elif (sw_ == 'hu' or sw_ == 'hun' or sw_ == 'hungarian'):
+                    name = 'Stopwords-Hungarian.txt'
+                elif (sw_ == 'it' or sw_ == 'ita' or sw_ == 'italian'):
+                    name = 'Stopwords-Italian.txt'
+                elif (sw_ == 'ja' or sw_ == 'jpn' or sw_ == 'japanese'):
+                    name = 'Stopwords-Japanese.txt'
+                elif (sw_ == 'ko' or sw_ == 'kor' or sw_ == 'korean'):
+                    name = 'Stopwords-Korean.txt'
+                elif (sw_ == 'mr' or sw_ == 'mar' or sw_ == 'marathi'):
+                    name = 'Stopwords-Marathi.txt'
+                elif (sw_ == 'fa' or sw_ == 'per' or sw_ == 'fas' or sw_ == 'persian'):
+                    name = 'Stopwords-Persian.txt'
+                elif (sw_ == 'pl' or sw_ == 'pol' or sw_ == 'polish'):
+                    name = 'Stopwords-Polish.txt'
+                elif (sw_ == 'pt-br' or sw_ == 'por-br' or sw_ == 'portuguese-br'):
+                    name = 'Stopwords-Portuguese-br.txt'
+                elif (sw_ == 'ro' or sw_ == 'rum' or sw_ == 'ron' or sw_ == 'romanian'):
+                    name = 'Stopwords-Romanian.txt'
+                elif (sw_ == 'ru' or sw_ == 'rus' or sw_ == 'russian'):
+                    name = 'Stopwords-Russian.txt'
+                elif (sw_ == 'sk' or sw_ == 'slo' or sw_ == 'slovak'):
+                    name = 'Stopwords-Slovak.txt'
+                elif (sw_ == 'es' or sw_ == 'spa' or sw_ == 'spanish'):
+                    name = 'Stopwords-Spanish.txt'
+                elif (sw_ == 'sv' or sw_ == 'swe' or sw_ == 'swedish'):
+                    name = 'Stopwords-Swedish.txt'
+                elif (sw_ == 'th' or sw_ == 'tha' or sw_ == 'thai'):
+                    name = 'Stopwords-Thai.txt'
+                elif (sw_ == 'uk' or sw_ == 'ukr' or sw_ == 'ukrainian'):
+                    name = 'Stopwords-Ukrainian.txt'
+                with pkg_resources.open_binary(stws, name) as file:
+                    raw_data = file.read()
+                result   = chardet.detect(raw_data)
+                encoding = result['encoding']
+                with pkg_resources.open_text(stws, name, encoding = encoding) as file:
+                    content = file.read().split('\n')
+                content = [line.rstrip('\r').rstrip('\n') for line in content]
+                sw      = list(filter(None, content))
+                self.sw_full.extend(sw)
             if (verbose == True):
                 print('Removing Stopwords: Working...')
             for i in range(0, len(corpus)):
                text      = corpus[i].split()
-               text      = [x.replace(' ', '') for x in text if x.replace(' ', '') not in sw_full]
+               text      = [x.replace(' ', '') for x in text if x.replace(' ', '') not in self.sw_full]
                corpus[i] = ' '.join(text) 
                if (verbose == True):
                    print('Removing Stopwords: ' + str(i + 1) +  ' of ' + str(len(corpus)) )
@@ -271,8 +279,8 @@ class summarization():
     # Function: TF
     def tf_matrix(self):
         vectorizer = CountVectorizer()
-        vectorizer.fit(self.sentences)
-        tf_matrix  = vectorizer.transform(self.sentences)
+        vectorizer.fit(self.corpus)
+        tf_matrix  = vectorizer.transform(self.corpus)
         tf_m       = tf_matrix.toarray()
         tf_m       = tf_m/np.sum(tf_m, axis = 1).reshape(-1, 1)
         #vectorizer.vocabulary_
@@ -282,8 +290,8 @@ class summarization():
     # Function: IDF
     def idf_matrix(self):
         vectorizer = TfidfVectorizer(use_idf = True)
-        vectorizer.fit(self.sentences)
-        idf_m      = vectorizer.transform(self.sentences)
+        vectorizer.fit(self.corpus)
+        idf_m      = vectorizer.transform(self.corpus)
         idf_m      = vectorizer.idf_
         #vectorizer.vocabulary_
         return idf_m
@@ -291,8 +299,8 @@ class summarization():
     # Function: TF-IDF
     def tf_idf_matrix(self):
         vectorizer    = TfidfVectorizer()
-        vectorizer.fit(self.sentences)
-        tf_idf_matrix = vectorizer.transform(self.sentences)
+        vectorizer.fit(self.corpus)
+        tf_idf_matrix = vectorizer.transform(self.corpus)
         tf_idf_m      = tf_idf_matrix.toarray()
         #vectorizer.vocabulary_
         #vectorizer.get_feature_names()
@@ -483,9 +491,7 @@ class summarization():
     def create_embeddings(self, model = 'all-MiniLM-L6-v2'):
         if (model not in self.loaded_models):
             self.loaded_models[model] = SentenceTransformer(model)
-        #model_ = SentenceTransformer(model)
-        #embds  = model_.encode(self.sentences)
-        embds = self.loaded_models[model].encode(self.sentences)
+        embds = self.loaded_models[model].encode(self.corpus)
         return embds
     
     # Function: TextRank
@@ -528,7 +534,7 @@ class summarization():
     def cs_distribution(self, idx, vocab):
         tokens = []
         for i in idx:
-            tokens.append(self.sentences[i].split())
+            tokens.append(self.corpus[i].split())
         tokens = [word for sentence in tokens for word in sentence]
         q      = [tokens.count(word)/len(tokens) if word in tokens else 0 for word in vocab]
         return q 
@@ -546,14 +552,14 @@ class summarization():
         min_KL       = float('inf')
         vocab        = sorted(self.vocabulary)
         p            = [self.w_dist[word] for word in vocab]
-        for candidate_summaries in combinations(range(0, len(self.sentences)), n):
+        for candidate_summaries in combinations(range(0, len(self.corpus)), n):
             idx = [i for i in candidate_summaries]
             q   = self.cs_distribution(idx, vocab)
             KL  = self.KL_divergence(p, q)
             if (KL < min_KL):
                 min_KL       = KL
                 best_summary = [item for item in idx]
-        rank     = [1 if x in best_summary else 0 for x in range(0, len(self.sentences))]
+        rank     = [1 if x in best_summary else 0 for x in range(0, len(self.corpus))]
         rank_sum = sum(rank)
         for i in range(0, len(rank)):
             if (rank[i] == 1):
@@ -597,10 +603,10 @@ class summarization():
         return summary 
     
     # Function: PEGASUS
-    def summ_abst_pegasus(self, text, model_name = 'google/pegasus-xsum', min_L = 100, max_L = 150):
+    def summ_abst_pegasus(self, model_name = 'google/pegasus-xsum', min_L = 100, max_L = 150):
         tokenizer = PegasusTokenizer.from_pretrained(model_name)
         pegasus   = PegasusForConditionalGeneration.from_pretrained(model_name)
-        tokens    = tokenizer.encode('summarize: ' + text, return_tensors = 'pt', max_length = 1024, truncation = True)
+        tokens    = tokenizer.encode('summarize: ' + self.full_txt, return_tensors = 'pt', max_length = 1024, truncation = True)
         summary   = pegasus.generate(tokens, min_length = min_L, max_length = max_L, length_penalty = 2.0, num_beams = 4, early_stopping = True)
         summary   = tokenizer.decode(summary[0], skip_special_tokens = True)
         self.summ = summary 
