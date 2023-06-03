@@ -29,6 +29,7 @@ from sentence_transformers import SentenceTransformer
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+from transformers import BartTokenizer, BartForConditionalGeneration
 from transformers import T5ForConditionalGeneration, T5Tokenizer
 from transformers import PegasusForConditionalGeneration, PegasusTokenizer
 
@@ -107,14 +108,15 @@ class summarization():
         return sentences
 
     # Function: Show Summary
-    def show_summary(self, rank, n = 3):
+    def show_summary(self, rank, n = 3, verbose = False):
         idx       = np.argsort(rank)[::-1]
         self.summ = []
         if (n > len(rank)):
             n = len(rank)
         for i in range(0, n):
             sentence =  self.original[idx[i]]
-            print(sentence)
+            if (verbose == True):
+                print(sentence)
             self.summ.append(sentence)
         self.summ = ' '.join(self.summ)
         return self.summ
@@ -569,22 +571,55 @@ class summarization():
         return rank
 
     ##############################################################################   
-
-    # Function: T5
-    def summ_ext_t5(self, model = 't5-base', min_len = 30, max_len = 250):
-        tokenizer = T5Tokenizer.from_pretrained(model)
+    
+    # BART
+    
+    # Function: BART
+    def summ_ext_bart(self, model = 'facebook/bart-large-cnn', max_len = 250, verbose = False):
+        tokenizer = BartTokenizer.from_pretrained(model)
+        bart      = BartForConditionalGeneration.from_pretrained(model)
+        inputs    = tokenizer([self.full_txt], max_length = 1024, truncation = True, padding = 'longest', return_tensors = 'pt')
+        outputs   = bart.generate(inputs['input_ids'], num_beams = 4, max_length = max_len, early_stopping = True)
+        summary   = tokenizer.decode(outputs[0], skip_special_tokens = True)
+        self.summ = summary
+        if (verbose == True):
+            print(summary)
+        return summary
+        
+    # T5
+    
+    # Function: T5       
+    def summ_ext_t5(self, model = 't5-base', min_len = 30, max_len = 250, model_max_length = 512, verbose = False):
+        tokenizer = T5Tokenizer.from_pretrained(model, model_max_length = model_max_length)
         t5_model  = T5ForConditionalGeneration.from_pretrained(model)
-        inputs    = tokenizer.encode('summarize: ' + self.full_txt, return_tensors = 'pt', max_length = 512, truncation = True)
+        inputs    = tokenizer.encode('summarize: ' + self.full_txt, return_tensors = 'pt', truncation = True)
         outputs   = t5_model.generate(inputs, min_length = min_len, max_length = max_len, num_beams = 4, no_repeat_ngram_size = 2)
         summary   = tokenizer.decode(outputs[0], skip_special_tokens = True)
-        self.summ = summary 
-        print(summary)
+        self.summ = summary
+        if (verbose == True):
+            print(summary)
         return summary
-
+        
     ##############################################################################
     
+    # PEGASUS
+    
+    # Function: PEGASUS
+    def summ_abst_pegasus(self, model_name = 'google/pegasus-xsum', min_L = 100, max_L = 150, verbose = False):
+        tokenizer = PegasusTokenizer.from_pretrained(model_name)
+        pegasus   = PegasusForConditionalGeneration.from_pretrained(model_name)
+        tokens    = tokenizer.encode('summarize: ' + self.full_txt, return_tensors = 'pt', max_length = 1024, truncation = True)
+        summary   = pegasus.generate(tokens, min_length = min_L, max_length = max_L, length_penalty = 2.0, num_beams = 4, early_stopping = True)
+        summary   = tokenizer.decode(summary[0], skip_special_tokens = True)
+        self.summ = summary 
+        if (verbose == True):
+            print(summary)
+        return summary
+    
+    # chatGPT
+    
     # Function: chatGPT
-    def summ_abst_chatgpt(self, api_key = 'your_api_key_here', query = 'make an abstratctive summarization', model = 'text-davinci-003', max_tokens = 250, n = 1, temperature = 0.8):
+    def summ_abst_chatgpt(self, api_key = 'your_api_key_here', query = 'make an abstratctive summarization', model = 'text-davinci-003', max_tokens = 250, n = 1, temperature = 0.8, verbose = False):
         def query_chatgpt(prompt, model = model, max_tokens = max_tokens, n = n, temperature = temperature):
             response = openai.Completion.create(
                                                 engine      = model,
@@ -599,18 +634,8 @@ class summarization():
         prompt         = query + ':\n\n' + f'{self.full_txt}\n'
         summary        = query_chatgpt(prompt)
         self.summ      = summary 
-        print(summary)
+        if (verbose == True):
+            print(summary)
         return summary 
-    
-    # Function: PEGASUS
-    def summ_abst_pegasus(self, model_name = 'google/pegasus-xsum', min_L = 100, max_L = 150):
-        tokenizer = PegasusTokenizer.from_pretrained(model_name)
-        pegasus   = PegasusForConditionalGeneration.from_pretrained(model_name)
-        tokens    = tokenizer.encode('summarize: ' + self.full_txt, return_tensors = 'pt', max_length = 1024, truncation = True)
-        summary   = pegasus.generate(tokens, min_length = min_L, max_length = max_L, length_penalty = 2.0, num_beams = 4, early_stopping = True)
-        summary   = tokenizer.decode(summary[0], skip_special_tokens = True)
-        self.summ = summary 
-        print(summary)
-        return summary
 
     ##############################################################################   
