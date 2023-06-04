@@ -309,7 +309,9 @@ class summarization():
         return tf_idf_m
 
     ##############################################################################
-    
+
+    # ROUGE N
+
     # Function: Rouge N 
     def rouge_N(self, generated_summary, reference_summary, n = 1):
         generated_summary = self.clear_text([generated_summary], stop_words = self.p_sw, lowercase = self.p_lc, rmv_accents = self.p_ra, rmv_special_chars = self.p_rc, rmv_numbers = self.p_rn, rmv_custom_words = self.p_rw)
@@ -334,6 +336,8 @@ class summarization():
         return f1, precision, recall
 
     ##############################################################################
+    
+    # ROUGE L
     
     # Function: LCS
     def LCS(self, gen_tokens, ref_tokens):
@@ -361,6 +365,8 @@ class summarization():
     
     ##############################################################################
     
+    # ROUGE S
+    
     # Function: Generate Skip Gram
     def generate_skip_bigrams(self, tokens, skip_distance):
         skip_bigrams = set()
@@ -384,6 +390,8 @@ class summarization():
         return f1, precision, recall
 
     ##############################################################################
+    
+    # BLEU
     
     # Function: Count N-Grams
     def count_ngrams(self, tokens, n):
@@ -423,6 +431,8 @@ class summarization():
 
     ##############################################################################
     
+    # METEOR
+    
     # Function: Match Tokens
     def match_tokens(self, gen_tokens, ref_tokens):
         matches  = 0
@@ -437,6 +447,16 @@ class summarization():
                 matches         = matches + 1
                 ref_dict[token] = ref_dict[token] - 1
         return matches
+    
+    # Function: Number of Chunks
+    def calculate_num_chunks(self, candidate_chunks, reference_chunks):
+        num_chunks = 0
+        for chunk in candidate_chunks:
+            for ref_chunk in reference_chunks:
+                if any(token in ref_chunk for token in chunk):
+                    num_chunks = num_chunks + 1
+                    break  
+        return num_chunks
     
     # Function: Chunck Penalty
     def calculate_chunk_penalty(self, gen_tokens, ref_tokens, matches):
@@ -458,15 +478,15 @@ class summarization():
                     candidate_chunks.add(tuple(range(chunk_start, i)))
                     chunk_start = None
                 if (ref_chunk_start is not None and ref_chunk_end is not None):
-                    reference_chunks.add(tuple(range(ref_chunk_start, ref_chunk_end+1)))
+                    reference_chunks.add(tuple(range(ref_chunk_start, ref_chunk_end + 1)))
                     ref_chunk_start = None
-                    ref_chunk_end = None
+                    ref_chunk_end   = None
         if (chunk_start is not None):
             candidate_chunks.add(tuple(range(chunk_start, len(gen_tokens))))
         if (ref_chunk_start is not None and ref_chunk_end is not None):
-            reference_chunks.add(tuple(range(ref_chunk_start, ref_chunk_end+1)))
-        num_chunks    = len(candidate_chunks.intersection(reference_chunks))
-        chunk_penalty = 1 - (num_chunks / matches)**0.5 if matches > 0 else 1
+            reference_chunks.add(tuple(range(ref_chunk_start, ref_chunk_end + 1)))
+        num_chunks    = self.calculate_num_chunks(candidate_chunks, reference_chunks)
+        chunk_penalty = 0 if matches == 0 else 0.5*(num_chunks / matches)**3
         return chunk_penalty
     
     # Function: METEOR Score
