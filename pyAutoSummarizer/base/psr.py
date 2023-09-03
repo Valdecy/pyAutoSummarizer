@@ -641,15 +641,24 @@ class summarization():
     # Function: chatGPT
     def summ_abst_chatgpt(self, api_key = 'your_api_key_here', query = 'make an abstratctive summarization', model = 'text-davinci-003', max_tokens = 250, n = 1, temperature = 0.8, verbose = False):
         def query_chatgpt(prompt, model = model, max_tokens = max_tokens, n = n, temperature = temperature):
-            response = openai.Completion.create(
-                                                engine      = model,
-                                                prompt      = prompt,
-                                                max_tokens  = max_tokens,
-                                                n           = n,
-                                                stop        = None,
-                                                temperature = temperature
-                                                )
-            return response.choices[0].text.strip()
+            try: 
+                response = openai.ChatCompletion.create(
+                                                        model      = model,
+                                                        messages   = [{'role': 'user', 'content': prompt}],
+                                                        max_tokens = max_tokens
+                                                        )
+                response = response['choices'][0]['message']['content']
+            except:
+                response = openai.Completion.create(
+                                                    engine      = model,
+                                                    prompt      = prompt,
+                                                    max_tokens  = max_tokens,
+                                                    n           = n,
+                                                    stop        = None,
+                                                    temperature = temperature
+                                                    )
+                response = response.choices[0].text.strip()
+            return response
         openai.api_key = api_key   
         prompt         = query + ':\n\n' + f'{self.full_txt}\n'
         summary        = query_chatgpt(prompt)
