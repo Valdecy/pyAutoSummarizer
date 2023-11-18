@@ -14,6 +14,7 @@
 import chardet
 import numpy as np
 import openai 
+import os
 import re 
 import regex
 import unicodedata 
@@ -25,6 +26,7 @@ except ImportError:
 from . import stws
 
 from itertools import combinations
+from openai import OpenAI
 from sentence_transformers import SentenceTransformer 
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -640,31 +642,52 @@ class summarization():
     
     # Function: chatGPT
     def summ_abst_chatgpt(self, api_key = 'your_api_key_here', query = 'make an abstratctive summarization', model = 'text-davinci-003', max_tokens = 250, n = 1, temperature = 0.8, verbose = False):
+        flag                     = 0
+        os.environ['OPENAI_KEY'] = api_key
+        prompt                   = query + ':\n\n' + f'{self.full_txt}\n'
+        
+        ##############################################################################
+       
+        def version_check(major, minor, patch):
+            try:
+                version                   = openai.__version__
+                major_v, minor_v, patch_v = [int(v) for v in version.split('.')]
+                if ( (major_v, minor_v, patch_v) >= (major, minor, patch) ):
+                    return True
+                else:
+                    return False
+            except AttributeError:
+                return False
+        
+        if (version_check(1, 0, 0)):
+            flag = 1
+        else:
+            flag = 0
+        
+        ##############################################################################
+            
         def query_chatgpt(prompt, model = model, max_tokens = max_tokens, n = n, temperature = temperature):
-            try: 
-                response = openai.ChatCompletion.create(
-                                                        model      = model,
-                                                        messages   = [{'role': 'user', 'content': prompt}],
-                                                        max_tokens = max_tokens
-                                                        )
-                response = response['choices'][0]['message']['content']
-            except:
-                response = openai.Completion.create(
-                                                    engine      = model,
-                                                    prompt      = prompt,
-                                                    max_tokens  = max_tokens,
-                                                    n           = n,
-                                                    stop        = None,
-                                                    temperature = temperature
-                                                    )
+            if (flag == 0):
+              try:
+                  response = openai.ChatCompletion.create(model = model, messages = [{'role': 'user', 'content': prompt}], max_tokens = max_tokens)
+                  response = response['choices'][0]['message']['content']
+              except:
+                  response = openai.Completion.create(engine = model, prompt = prompt, max_tokens = max_tokens, n = n, stop = None, temperature = temperature)
+                  response = response.choices[0].text.strip()
+            else:
+              try:
+                client   = OpenAI(api_key = api_key)
+                response = client.chat.completions.create(model = model, messages = [{'role': 'user', 'content': prompt}], max_tokens = max_tokens)
+                response = response.choices[0].message.content
+              except:
+                client   = OpenAI(api_key = api_key)
+                response = client.completions.create( model = model, prompt = prompt, max_tokens = max_tokens, n = n, stop = None, temperature = temperature)
                 response = response.choices[0].text.strip()
             return response
-        openai.api_key = api_key   
-        prompt         = query + ':\n\n' + f'{self.full_txt}\n'
-        summary        = query_chatgpt(prompt)
-        self.summ      = summary 
+        summary   = query_chatgpt(prompt)
+        self.summ = summary
         if (verbose == True):
             print(summary)
-        return summary 
+        return summary
 
-    ##############################################################################   
+    ##############################################################################
