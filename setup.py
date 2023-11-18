@@ -15,8 +15,8 @@ setup(
     include_package_data=True,
     install_requires=[
         'chardet',
-        'numpy',
         'llmx',
+        'numpy',
         'regex',
         'scikit-learn',
         'sentence_transformers',
