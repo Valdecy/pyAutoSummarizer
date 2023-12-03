@@ -26,7 +26,6 @@ except ImportError:
 from . import stws
 
 from itertools import combinations
-from openai import OpenAI
 from sentence_transformers import SentenceTransformer 
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -676,14 +675,17 @@ class summarization():
                   response = response.choices[0].text.strip()
             else:
               try:
-                client   = OpenAI(api_key = api_key)
+                client   = openai.OpenAI(api_key = api_key)
                 response = client.chat.completions.create(model = model, messages = [{'role': 'user', 'content': prompt}], max_tokens = max_tokens)
                 response = response.choices[0].message.content
               except:
-                client   = OpenAI(api_key = api_key)
+                client   = openai.OpenAI(api_key = api_key)
                 response = client.completions.create( model = model, prompt = prompt, max_tokens = max_tokens, n = n, stop = None, temperature = temperature)
                 response = response.choices[0].text.strip()
             return response
+        
+        ##############################################################################
+        
         summary   = query_chatgpt(prompt)
         self.summ = summary
         if (verbose == True):
